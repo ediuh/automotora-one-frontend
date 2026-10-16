@@ -13,6 +13,8 @@ const navMenu = document.getElementById("navMenu");
 
 async function loadCatalog() {
   try {
+    vehicleGrid.innerHTML = '<div class="no-results" style="font-weight: bold; font-size: 1.1rem;">Cargando autos...<br>Agradecemos tu paciencia.</div>';
+
     const response = await fetch(API_URL);
     if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
     
