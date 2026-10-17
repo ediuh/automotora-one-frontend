@@ -1,48 +1,338 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Editor de stock | Automotora One</title>
-<link rel="icon" href="logo-icon.png">
-<style>
-:root{--red:#d71920;--dark:#111;--muted:#6f6f6f;--line:#e7e7e7;--bg:#f5f5f5}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:#222}.wrap{width:min(1180px,calc(100% - 30px));margin:0 auto}.top{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}.topin{height:78px;display:flex;align-items:center;gap:18px}.logo{height:52px}.top h1{font-size:1rem;margin:0}.spacer{flex:1}.btn{border:0;border-radius:9px;padding:12px 16px;font-weight:700;cursor:pointer}.primary{background:var(--red);color:#fff}.secondary{background:#fff;border:1px solid #ccc}.danger{background:#fff0f0;color:#ad151a;border:1px solid #ffd0d0}.hero{padding:34px 0 18px}.hero h2{font-size:2.2rem;margin:0 0 8px}.hero p{color:var(--muted);margin:0;line-height:1.5}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}.cards{display:grid;gap:16px;padding-bottom:40px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.04)}.cardhead{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:16px}.cardhead strong{font-size:1.08rem}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.wide{grid-column:span 2}.full{grid-column:1/-1}label{font-size:.78rem;font-weight:700;color:#555;display:block}input,select,textarea{margin-top:6px;width:100%;padding:11px 12px;border:1px solid #d8d8d8;border-radius:8px;background:#fff;font:inherit}textarea{resize:vertical}.preview{display:flex;gap:14px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.preview img{width:120px;height:78px;object-fit:cover;border-radius:9px;background:#eee}.muted{color:#777;font-size:.82rem}.notice{background:#fff7e6;border:1px solid #ffe0a3;padding:13px 15px;border-radius:10px;color:#6d5115;font-size:.88rem;line-height:1.5}.savebar{position:sticky;bottom:0;background:rgba(245,245,245,.94);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 0}.savein{display:flex;align-items:center;gap:10px}.status{margin-left:auto;font-size:.85rem;color:#555}@media(max-width:850px){.grid{grid-template-columns:1fr 1fr}.wide{grid-column:span 2}}@media(max-width:560px){.grid{grid-template-columns:1fr}.wide,.full{grid-column:1}.top h1{display:none}.logo{height:42px}.hero h2{font-size:1.7rem}.topin .secondary{display:none}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración | Automotora One</title>
+  <link rel="icon" href="logo-icon.png">
+  <link rel="stylesheet" href="editor.css">
+  <style>
+    /* Estilos adicionales para pestañas y tabla (puedes moverlos a editor.css luego) */
+    .tabs { display: flex; gap: 10px; margin-top: 10px; border-bottom: 2px solid var(--line); }
+    .tab-btn { background: none; border: none; padding: 10px 20px; font-weight: bold; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    .tab-btn.active { color: var(--red); border-bottom-color: var(--red); }
+    .tab-content { display: none; padding-top: 20px; }
+    .tab-content.active { display: block; }
+    
+    .users-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,.05); }
+    .users-table th, .users-table td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--line); }
+    .users-table th { background: #fafafa; font-size: 0.85rem; color: #555; }
+    
+    .user-form { background: #fff; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+    @media (max-width: 850px) { .user-form { grid-template-columns: 1fr 1fr; } .user-form button { grid-column: span 2; } }
+  </style>
 </head>
 <body>
-<header class="top"><div class="wrap topin"><img class="logo" src="logo-full.png" alt="Automotora One"><h1>Editor de stock</h1><div class="spacer"></div><a class="btn secondary" href="index.html" target="_blank">Ver página</a><button class="btn primary" id="addBtn">+ Agregar vehículo</button></div></header>
-<main class="wrap">
-<section class="hero"><h2>Stock de vehículos</h2><p>Aquí puedes agregar, editar, reservar o eliminar autos del catálogo.</p></section>
-<div class="notice"><strong>Importante:</strong> este editor guarda los cambios en este navegador. Cuando la web esté publicada en un dominio, este sistema sirve para la vista local del mismo navegador; para que varios usuarios editen un stock centralizado necesitaremos conectar una base de datos o un gestor como Google Sheets/Airtable/Supabase.</div>
-<div class="toolbar"><button class="btn secondary" id="exportBtn">Exportar respaldo</button><label class="btn secondary" style="cursor:pointer">Importar respaldo<input id="importFile" type="file" accept="application/json" hidden></label><button class="btn danger" id="resetBtn">Restaurar autos de ejemplo</button></div>
-<div class="cards" id="cards"></div>
-</main>
-<div class="savebar"><div class="wrap savein"><button class="btn primary" id="saveBtn">Guardar cambios</button><a class="btn secondary" href="index.html" target="_blank">Abrir catálogo</a><span class="status" id="status">Sin cambios</span></div></div>
-<script>
-const KEY='automotoraOneStockV1';
-const DEFAULT=[
-{id:1,brand:'Mazda',model:'CX-5',year:2022,price:18990000,km:42500,transmission:'Automática',fuel:'Bencina',status:'Disponible',image:'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85',description:'SUV cómoda, moderna y versátil. Ideal para uso familiar y viajes.'},
-{id:2,brand:'Toyota',model:'Corolla',year:2021,price:13990000,km:58100,transmission:'Automática',fuel:'Bencina',status:'Disponible',image:'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1200&q=85',description:'Sedán confiable y eficiente, con excelente equilibrio entre comodidad y consumo.'},
-{id:3,brand:'Hyundai',model:'Tucson',year:2020,price:15490000,km:67300,transmission:'Automática',fuel:'Diésel',status:'Disponible',image:'https://images.unsplash.com/photo-1494905998402-395d579af36f?auto=format&fit=crop&w=1200&q=85',description:'SUV espaciosa y práctica, con buena autonomía y equipamiento.'},
-{id:4,brand:'Kia',model:'Sportage',year:2023,price:20990000,km:28900,transmission:'Automática',fuel:'Bencina',status:'Reservado',image:'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=85',description:'SUV moderna, con excelente presencia y bajo kilometraje.'},
-{id:5,brand:'Volkswagen',model:'T-Cross',year:2022,price:16490000,km:39100,transmission:'Automática',fuel:'Bencina',status:'Disponible',image:'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=85',description:'SUV compacta, ágil y equipada para ciudad y carretera.'},
-{id:6,brand:'Suzuki',model:'Swift',year:2021,price:9990000,km:51200,transmission:'Manual',fuel:'Bencina',status:'Disponible',image:'https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?auto=format&fit=crop&w=1200&q=85',description:'Hatchback compacto, económico y fácil de mantener.'}
-];
-let cars=load();let dirty=false;
-function load(){try{const s=localStorage.getItem(KEY);return s?JSON.parse(s):DEFAULT.map(x=>({...x}))}catch(e){return DEFAULT.map(x=>({...x}))}}
-function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function render(){const root=document.getElementById('cards'); if(!cars.length){root.innerHTML='<div class="card">No hay vehículos. Presiona “Agregar vehículo”.</div>';return} root.innerHTML=cars.map((c,i)=>`<section class="card" data-i="${i}"><div class="cardhead"><strong>${esc(c.brand)} ${esc(c.model)}</strong><button class="btn danger del" data-i="${i}">Eliminar</button></div><div class="grid">
-<label>Marca<input data-k="brand" value="${esc(c.brand)}"></label><label>Modelo<input data-k="model" value="${esc(c.model)}"></label><label>Año<input data-k="year" type="number" value="${c.year||''}"></label><label>Precio CLP<input data-k="price" type="number" value="${c.price||''}"></label>
-<label>Kilometraje<input data-k="km" type="number" value="${c.km||''}"></label><label>Transmisión<select data-k="transmission"><option ${c.transmission==='Automática'?'selected':''}>Automática</option><option ${c.transmission==='Manual'?'selected':''}>Manual</option></select></label><label>Combustible<select data-k="fuel"><option ${c.fuel==='Bencina'?'selected':''}>Bencina</option><option ${c.fuel==='Diésel'?'selected':''}>Diésel</option><option ${c.fuel==='Híbrido'?'selected':''}>Híbrido</option><option ${c.fuel==='Eléctrico'?'selected':''}>Eléctrico</option></select></label><label>Estado<select data-k="status"><option ${c.status==='Disponible'?'selected':''}>Disponible</option><option ${c.status==='Reservado'?'selected':''}>Reservado</option><option ${c.status==='Vendido'?'selected':''}>Vendido</option></select></label>
-<label class="full">URL de la foto<input data-k="image" value="${esc(c.image)}" placeholder="https://..."></label><label class="full">Descripción<textarea data-k="description" rows="3">${esc(c.description)}</textarea></label></div><div class="preview"><img src="${esc(c.image)}" onerror="this.style.opacity=.2"><div><strong>${esc(c.brand)} ${esc(c.model)}</strong><div class="muted">Así se identificará en el catálogo.</div></div></div></section>`).join(''); bind()}
-function bind(){document.querySelectorAll('[data-k]').forEach(el=>el.addEventListener('input',e=>{const card=e.target.closest('.card'),i=+card.dataset.i,k=e.target.dataset.k;cars[i][k]=['year','price','km'].includes(k)?Number(e.target.value):e.target.value;dirty=true;status('Cambios sin guardar');if(k==='brand'||k==='model')card.querySelector('.cardhead strong').textContent=`${cars[i].brand} ${cars[i].model}`}));document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{if(confirm('¿Eliminar este vehículo del stock?')){cars.splice(+b.dataset.i,1);dirty=true;render();status('Cambios sin guardar')}})}
-function status(t){document.getElementById('status').textContent=t}
-document.getElementById('addBtn').onclick=()=>{cars.unshift({id:Date.now(),brand:'Marca',model:'Modelo',year:new Date().getFullYear(),price:0,km:0,transmission:'Automática',fuel:'Bencina',status:'Disponible',image:'',description:''});dirty=true;render();status('Vehículo agregado · falta guardar');window.scrollTo({top:0,behavior:'smooth'})};
-document.getElementById('saveBtn').onclick=()=>{localStorage.setItem(KEY,JSON.stringify(cars));dirty=false;status('✓ Stock guardado. Abre o recarga el catálogo.')};
-document.getElementById('resetBtn').onclick=()=>{if(confirm('¿Restaurar los autos de ejemplo?')){cars=DEFAULT.map(x=>({...x}));localStorage.setItem(KEY,JSON.stringify(cars));dirty=false;render();status('Autos de ejemplo restaurados')}};
-document.getElementById('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(cars,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='stock-automotora-one.json';a.click();URL.revokeObjectURL(a.href)};
-document.getElementById('importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d))throw 0;cars=d;dirty=true;render();status('Respaldo importado · presiona Guardar cambios')}catch(_){alert('El archivo no parece ser un respaldo válido.')}};r.readAsText(f)};
-window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});render();
-</script>
-</body></html>
+
+  <!-- Modal de Autenticación -->
+  <div id="loginModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000;">
+    <form id="loginForm" style="background:#fff; padding:32px; border-radius:16px; width:min(400px, 90%); box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="logo-full.png" alt="Automotora One" style="height: 40px; margin-bottom: 10px;">
+        <h3 style="margin:0; font-size:1.5rem;">Acceso Administrativo</h3>
+      </div>
+      
+      <label style="display:block; margin-bottom:12px; font-weight:bold; font-size:0.82rem;">
+        Correo electrónico
+        <input type="email" id="loginEmail" required placeholder="admin@automotoraone.cl" style="width:100%; padding:10px; margin-top:4px; border:1px solid #ccc; border-radius:8px;">
+      </label>
+      
+      <label style="display:block; margin-bottom:20px; font-weight:bold; font-size:0.82rem;">
+        Contraseña
+        <input type="password" id="loginPassword" required placeholder="••••••••" style="width:100%; padding:10px; margin-top:4px; border:1px solid #ccc; border-radius:8px;">
+      </label>
+      
+      <div id="loginError" style="color:var(--red); font-size:0.82rem; margin-bottom:12px; display:none; text-align: center;"></div>
+      
+      <button type="submit" class="btn primary" style="width:100%;">Ingresar al panel</button>
+    </form>
+  </div>
+
+  <!-- Header -->
+  <header class="top">
+    <div class="wrap topin">
+      <img class="logo" src="logo-full.png" alt="Automotora One">
+      <h1>Panel de Administración</h1>
+      <div class="spacer"></div>
+      <button class="btn secondary" onclick="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <!-- Contenido Principal -->
+  <main class="wrap">
+    
+    <!-- Pestañas -->
+    <nav class="tabs">
+      <button class="tab-btn active" onclick="switchTab('stock')">Inventario de Vehículos</button>
+      <button class="tab-btn" onclick="switchTab('users')">Gestión de Administradores</button>
+    </nav>
+
+    <!-- PESTAÑA 1: STOCK (Tu código anterior) -->
+    <div id="stockTab" class="tab-content active">
+      <div class="notice" style="margin-top: 10px;">
+        <strong>Importante:</strong> este editor guarda los cambios en este navegador. Para la entrega 1 usamos almacenamiento local.
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" id="addBtn">+ Agregar vehículo</button>
+        <button class="btn secondary" id="exportBtn">Exportar respaldo</button>
+        <label class="btn secondary" style="cursor:pointer">
+          Importar respaldo
+          <input id="importFile" type="file" accept="application/json" hidden>
+        </label>
+        <button class="btn danger" id="resetBtn">Restaurar autos de ejemplo</button>
+      </div>
+
+      <div class="cards" id="cards"></div>
+    </div>
+
+    <!-- PESTAÑA 2: USUARIOS -->
+    <div id="usersTab" class="tab-content">
+      <form class="user-form" id="createUserForm">
+        <label>Nombre <input type="text" id="newUserFirstName" required></label>
+        <label>Apellido <input type="text" id="newUserLastName" required></label>
+        <label>Correo <input type="email" id="newUserEmail" required></label>
+        <label>Contraseña <input type="password" id="newUserPassword" required minlength="6"></label>
+        <button type="submit" class="btn primary">Crear Usuario</button>
+      </form>
+      
+      <div id="usersMessage" style="color:var(--red); font-size:0.85rem; margin-bottom:10px;"></div>
+
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Correo Electrónico</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <tr><td colspan="4">Cargando usuarios...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- Barra de Guardado (Solo visible en Stock) -->
+  <div class="savebar" id="stockSaveBar">
+    <div class="wrap savein">
+      <button class="btn primary" id="saveBtn">Guardar cambios del stock</button>
+      <a class="btn secondary" href="index.html" target="_blank">Abrir catálogo</a>
+      <span class="status" id="status">Sin cambios</span>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. CONFIGURACIÓN Y AUTENTICACIÓN
+    // ==========================================
+    const AUTH_API_URL = 'https://automotora-one-backend.onrender.com/auth/login';
+    const USERS_API_URL = 'https://automotora-one-backend.onrender.com/auth/users';
+
+    function getToken() { return localStorage.getItem('jwt_token'); }
+
+    function checkAuth() {
+      const token = getToken();
+      const modal = document.getElementById('loginModal');
+      if (token) {
+        modal.style.display = 'none';
+        loadUsers(); // Carga los usuarios si está autenticado
+      } else {
+        modal.style.display = 'flex';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('jwt_token');
+      checkAuth();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+      const btn = e.target.querySelector('button');
+
+      errorDiv.style.display = 'none';
+      btn.textContent = 'Verificando...';
+
+      try {
+        const response = await fetch(AUTH_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        if (!response.ok) throw new Error('Credenciales incorrectas');
+        const data = await response.json();
+        localStorage.setItem('jwt_token', data.access_token || data.token);
+        e.target.reset();
+        checkAuth();
+      } catch (err) {
+        errorDiv.textContent = err.message;
+        errorDiv.style.display = 'block';
+      } finally {
+        btn.textContent = 'Ingresar al panel';
+      }
+    });
+
+    // ==========================================
+    // 2. NAVEGACIÓN DE PESTAÑAS
+    // ==========================================
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById(`${tabName}Tab`).classList.add('active');
+      
+      // Ocultar barra de guardado si no estamos en stock
+      document.getElementById('stockSaveBar').style.display = tabName === 'stock' ? 'block' : 'none';
+    }
+
+    // ==========================================
+    // 3. GESTIÓN DE USUARIOS (CRUD CON RENDER)
+    // ==========================================
+    async function loadUsers() {
+      try {
+        const response = await fetch(USERS_API_URL, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (response.status === 401) return logout(); // Token expirado
+        if (!response.ok) throw new Error('Error al cargar usuarios');
+        
+        const users = await response.json();
+        const tbody = document.getElementById('usersTableBody');
+        
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td>${u.first_name}</td>
+            <td>${u.last_name}</td>
+            <td>${u.email}</td>
+            <td>
+              <button class="btn danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteUser('${u.id}')">Eliminar</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        document.getElementById('usersMessage').textContent = error.message;
+      }
+    }
+
+    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById('usersMessage');
+      msg.textContent = 'Creando...';
+      msg.style.color = '#555';
+
+      const payload = {
+        first_name: document.getElementById('newUserFirstName').value,
+        last_name: document.getElementById('newUserLastName').value,
+        email: document.getElementById('newUserEmail').value,
+        password: document.getElementById('newUserPassword').value
+      };
+
+      try {
+        const response = await fetch(USERS_API_URL, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getToken()}` 
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.status === 401) return logout();
+        if (!response.ok) throw new Error('Error al crear: El correo podría ya existir.');
+
+        e.target.reset();
+        msg.textContent = '';
+        loadUsers(); // Recarga la tabla
+      } catch (error) {
+        msg.textContent = error.message;
+        msg.style.color = 'var(--red)';
+      }
+    });
+
+    async function deleteUser(id) {
+      if (!confirm('¿Estás seguro de eliminar este administrador?')) return;
+      
+      try {
+        const response = await fetch(`${USERS_API_URL}/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        
+        if (response.status === 401) return logout();
+        if (!response.ok) throw new Error('Error al eliminar');
+        
+        loadUsers();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    // ==========================================
+    // 4. GESTIÓN DE STOCK (LOCALSTORAGE)
+    // ==========================================
+    const KEY = 'automotoraOneStockV1';
+    const DEFAULT = [
+      { id: 1, brand: 'Mazda', model: 'CX-5', year: 2022, price: 18990000, km: 42500, transmission: 'Automática', fuel: 'Bencina', status: 'Disponible', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85', description: 'SUV.' },
+      { id: 2, brand: 'Toyota', model: 'Corolla', year: 2021, price: 13990000, km: 58100, transmission: 'Automática', fuel: 'Bencina', status: 'Disponible', image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1200&q=85', description: 'Sedán.' }
+    ];
+
+    let cars = loadStock();
+    let dirty = false;
+
+    function loadStock() {
+      try { return localStorage.getItem(KEY) ? JSON.parse(localStorage.getItem(KEY)) : DEFAULT.map(x => ({ ...x })); } 
+      catch (e) { return DEFAULT.map(x => ({ ...x })); }
+    }
+
+    function esc(v = '') { return String(v).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
+
+    function renderStock() {
+      const root = document.getElementById('cards');
+      if (!cars.length) { root.innerHTML = '<div class="card">No hay vehículos.</div>'; return; }
+      root.innerHTML = cars.map((c, i) => `
+        <section class="card" data-i="${i}">
+          <div class="cardhead"><strong>${esc(c.brand)} ${esc(c.model)}</strong><button class="btn danger del" data-i="${i}">Eliminar</button></div>
+          <div class="grid">
+            <label>Marca<input data-k="brand" value="${esc(c.brand)}"></label><label>Modelo<input data-k="model" value="${esc(c.model)}"></label>
+            <label>Año<input data-k="year" type="number" value="${c.year || ''}"></label><label>Precio CLP<input data-k="price" type="number" value="${c.price || ''}"></label>
+            <label class="full">URL Foto<input data-k="image" value="${esc(c.image)}"></label>
+          </div>
+        </section>
+      `).join('');
+      bindStock();
+    }
+
+    function bindStock() {
+      document.querySelectorAll('[data-k]').forEach(el => el.addEventListener('input', e => {
+        const i = +e.target.closest('.card').dataset.i, k = e.target.dataset.k;
+        cars[i][k] = ['year', 'price', 'km'].includes(k) ? Number(e.target.value) : e.target.value;
+        dirty = true; status('Cambios sin guardar');
+      }));
+      document.querySelectorAll('.del').forEach(b => b.onclick = () => {
+        if (confirm('¿Eliminar?')) { cars.splice(+b.dataset.i, 1); dirty = true; renderStock(); status('Cambios sin guardar'); }
+      });
+    }
+
+    function status(t) { document.getElementById('status').textContent = t; }
+
+    document.getElementById('addBtn').onclick = () => { cars.unshift({ id: Date.now(), brand: 'Marca', model: 'Modelo', year: 2024, price: 0, image: '' }); dirty = true; renderStock(); status('Falta guardar'); };
+    document.getElementById('saveBtn').onclick = () => { localStorage.setItem(KEY, JSON.stringify(cars)); dirty = false; status('✓ Guardado.'); };
+    document.getElementById('resetBtn').onclick = () => { if(confirm('¿Restaurar?')){ cars = DEFAULT.map(x=>({...x})); localStorage.setItem(KEY, JSON.stringify(cars)); dirty=false; renderStock(); status('Restaurado'); }};
+
+    window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+    
+    // Iniciar
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      renderStock();
+    });
+  </script>
+</body>
+</html>
