@@ -1,0 +1,241 @@
+    :root {
+      --red: #d71920;
+      --dark: #111;
+      --muted: #6f6f6f;
+      --line: #e7e7e7;
+      --bg: #f5f5f5;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: #222;
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 30px));
+      margin: 0 auto;
+    }
+
+    .top {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topin {
+      height: 78px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .logo {
+      height: 52px;
+    }
+
+    .top h1 {
+      font-size: 1rem;
+      margin: 0;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+
+    .danger {
+      background: #fff0f0;
+      color: #ad151a;
+      border: 1px solid #ffd0d0;
+    }
+
+    .hero {
+      padding: 34px 0 18px;
+    }
+
+    .hero h2 {
+      font-size: 2.2rem;
+      margin: 0 0 8px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 22px 0;
+    }
+
+    .cards {
+      display: grid;
+      gap: 16px;
+      padding-bottom: 40px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .04);
+    }
+
+    .cardhead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 16px;
+    }
+
+    .cardhead strong {
+      font-size: 1.08rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .wide {
+      grid-column: span 2;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: .78rem;
+      font-weight: 700;
+      color: #555;
+      display: block;
+    }
+
+    input, select, textarea {
+      margin-top: 6px;
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #d8d8d8;
+      border-radius: 8px;
+      background: #fff;
+      font: inherit;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    .preview {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .preview img {
+      width: 120px;
+      height: 78px;
+      object-fit: cover;
+      border-radius: 9px;
+      background: #eee;
+    }
+
+    .muted {
+      color: #777;
+      font-size: .82rem;
+    }
+
+    .notice {
+      background: #fff7e6;
+      border: 1px solid #ffe0a3;
+      padding: 13px 15px;
+      border-radius: 10px;
+      color: #6d5115;
+      font-size: .88rem;
+      line-height: 1.5;
+    }
+
+    .savebar {
+      position: sticky;
+      bottom: 0;
+      background: rgba(245, 245, 245, .94);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--line);
+      padding: 12px 0;
+    }
+
+    .savein {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status {
+      margin-left: auto;
+      font-size: .85rem;
+      color: #555;
+    }
+
+    @media (max-width: 850px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .wide {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .wide, .full {
+        grid-column: 1;
+      }
+      .top h1 {
+        display: none;
+      }
+      .logo {
+        height: 42px;
+      }
+      .hero h2 {
+        font-size: 1.7rem;
+      }
+      .topin .secondary {
+        display: none;
+      }
+    }
