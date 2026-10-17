@@ -1,6 +1,5 @@
 const API_URL = 'https://automotora-one-backend.onrender.com/vehicles'; 
 let vehicles = [];
-
 const WHATSAPP_NUMBER = "56900000000";
 
 const vehicleGrid = document.getElementById("vehicleGrid");
@@ -39,7 +38,6 @@ function kmFormat(value){
 }
 
 function populateFilters(){
-  // checar esto
   brandFilter.innerHTML = '<option value="">Todas las marcas</option>';
   yearFilter.innerHTML = '<option value="">Todos los años</option>';
 
@@ -75,7 +73,6 @@ function getFilteredVehicles(){
   return list;
 }
 
-
 function renderVehicles(){
   const list=getFilteredVehicles();
   if(!list.length){
@@ -84,7 +81,6 @@ function renderVehicles(){
   }
 
   vehicleGrid.innerHTML=list.map(v=> {
-    // Busca explícitamente la imagen marcada como is_cover, si no, usa la primera, o una por defecto
     const coverObj = v.images?.find(img => img.is_cover) || v.images?.[0];
     const coverImage = coverObj ? coverObj.url : 'assets/no-image.jpg';
 
@@ -118,7 +114,6 @@ function openModal(id){
   const v=vehicles.find(x=>x.id===id);
   if(!v) return;
 
-  // lógica de portada para el modal
   const coverObj = v.images?.find(img => img.is_cover) || v.images?.[0];
   const coverImage = coverObj ? coverObj.url : 'assets/no-image.jpg';
 
@@ -145,7 +140,6 @@ function openModal(id){
     gallery.style.gap = "10px";
     gallery.style.marginTop = "20px";
     gallery.style.overflowX = "auto";
-    
 
     const modalSpecs = document.getElementById("modalSpecs");
     modalSpecs.parentNode.insertBefore(gallery, modalSpecs);
@@ -181,7 +175,6 @@ function openModal(id){
   document.getElementById("vehicleModal").classList.add("open");
   document.body.style.overflow="hidden";
 }
-
 
 function closeModal(){
   document.getElementById("vehicleModal").classList.remove("open");
