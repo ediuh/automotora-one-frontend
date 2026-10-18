@@ -67,23 +67,12 @@
       <button class="tab-btn" onclick="switchTab('users')">Gestión de Administradores</button>
     </nav>
 
-    <!-- PESTAÑA 1: STOCK (Tu código anterior) -->
+    <!-- PESTAÑA 1: STOCK -->
     <div id="stockTab" class="tab-content active">
-      <div class="notice" style="margin-top: 10px;">
-        <strong>Importante:</strong> este editor guarda los cambios en este navegador. Para la entrega 1 usamos almacenamiento local.
-      </div>
-
-      <div class="toolbar">
-        <button class="btn primary" id="addBtn">+ Agregar vehículo</button>
-        <button class="btn secondary" id="exportBtn">Exportar respaldo</button>
-        <label class="btn secondary" style="cursor:pointer">
-          Importar respaldo
-          <input id="importFile" type="file" accept="application/json" hidden>
-        </label>
-        <button class="btn danger" id="resetBtn">Restaurar autos de ejemplo</button>
-      </div>
-
-      <div class="cards" id="cards"></div>
+        <div class="toolbar">
+            <button class="btn primary" id="addBtn">+ Agregar vehículo</button>
+        </div>
+        <div class="cards" id="cards"></div>
     </div>
 
     <!-- PESTAÑA 2: USUARIOS -->
@@ -115,7 +104,7 @@
 
   </main>
 
-  <!-- Barra de Guardado (Solo visible en Stock) -->
+  <!-- Barra de Guardado -->
   <div class="savebar" id="stockSaveBar">
     <div class="wrap savein">
       <button class="btn primary" id="saveBtn">Guardar cambios del stock</button>
@@ -130,6 +119,7 @@
     // ==========================================
     const AUTH_API_URL = 'https://automotora-one-backend.onrender.com/auth/login';
     const USERS_API_URL = 'https://automotora-one-backend.onrender.com/auth/users';
+    const VEHICLES_API_URL = 'https://automotora-one-backend.onrender.com/vehicles'; 
 
     function getToken() { return localStorage.getItem('jwt_token'); }
 
@@ -138,7 +128,8 @@
       const modal = document.getElementById('loginModal');
       if (token) {
         modal.style.display = 'none';
-        loadUsers(); // Carga los usuarios si está autenticado
+        loadUsers(); 
+        loadStock();
       } else {
         modal.style.display = 'flex';
       }
@@ -188,19 +179,18 @@
       event.target.classList.add('active');
       document.getElementById(`${tabName}Tab`).classList.add('active');
       
-      // Ocultar barra de guardado si no estamos en stock
       document.getElementById('stockSaveBar').style.display = tabName === 'stock' ? 'block' : 'none';
     }
 
     // ==========================================
-    // 3. GESTIÓN DE USUARIOS (CRUD CON RENDER)
+    // 3. GESTIÓN DE USUARIOS (CRUD CON BD)
     // ==========================================
     async function loadUsers() {
       try {
         const response = await fetch(USERS_API_URL, {
           headers: { 'Authorization': `Bearer ${getToken()}` }
         });
-        if (response.status === 401) return logout(); // Token expirado
+        if (response.status === 401) return logout(); 
         if (!response.ok) throw new Error('Error al cargar usuarios');
         
         const users = await response.json();
@@ -211,9 +201,7 @@
             <td>${u.first_name}</td>
             <td>${u.last_name}</td>
             <td>${u.email}</td>
-            <td>
-              <button class="btn danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteUser('${u.id}')">Eliminar</button>
-            </td>
+            <td><button class="btn danger" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteUser('${u.id}')">Eliminar</button></td>
           </tr>
         `).join('');
       } catch (error) {
@@ -237,19 +225,16 @@
       try {
         const response = await fetch(USERS_API_URL, {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getToken()}` 
-          },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
           body: JSON.stringify(payload)
         });
 
         if (response.status === 401) return logout();
-        if (!response.ok) throw new Error('Error al crear: El correo podría ya existir.');
+        if (!response.ok) throw new Error('Error al crear (Correo ya existe o datos inválidos).');
 
         e.target.reset();
         msg.textContent = '';
-        loadUsers(); // Recarga la tabla
+        loadUsers(); 
       } catch (error) {
         msg.textContent = error.message;
         msg.style.color = 'var(--red)';
@@ -258,16 +243,13 @@
 
     async function deleteUser(id) {
       if (!confirm('¿Estás seguro de eliminar este administrador?')) return;
-      
       try {
         const response = await fetch(`${USERS_API_URL}/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${getToken()}` }
         });
-        
         if (response.status === 401) return logout();
         if (!response.ok) throw new Error('Error al eliminar');
-        
         loadUsers();
       } catch (error) {
         alert(error.message);
@@ -275,20 +257,28 @@
     }
 
     // ==========================================
-    // 4. GESTIÓN DE STOCK (LOCALSTORAGE)
+    // 4. GESTIÓN DE STOCK (CRUD CON BD)
     // ==========================================
-    const KEY = 'automotoraOneStockV1';
-    const DEFAULT = [
-      { id: 1, brand: 'Mazda', model: 'CX-5', year: 2022, price: 18990000, km: 42500, transmission: 'Automática', fuel: 'Bencina', status: 'Disponible', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=85', description: 'SUV.' },
-      { id: 2, brand: 'Toyota', model: 'Corolla', year: 2021, price: 13990000, km: 58100, transmission: 'Automática', fuel: 'Bencina', status: 'Disponible', image: 'https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=1200&q=85', description: 'Sedán.' }
-    ];
-
-    let cars = loadStock();
+    let cars = [];
     let dirty = false;
 
-    function loadStock() {
-      try { return localStorage.getItem(KEY) ? JSON.parse(localStorage.getItem(KEY)) : DEFAULT.map(x => ({ ...x })); } 
-      catch (e) { return DEFAULT.map(x => ({ ...x })); }
+    async function loadStock() {
+      try {
+        const root = document.getElementById('cards');
+        root.innerHTML = '<div class="card">Cargando vehículos desde la base de datos...</div>';
+        
+        const response = await fetch(VEHICLES_API_URL);
+        if (!response.ok) throw new Error('Error al obtener los vehículos');
+        
+        cars = await response.json();
+        // Limpiamos etiquetas locales de edición
+        cars.forEach(c => { c._isDirty = false; c._isNew = false; });
+        dirty = false;
+        status('Stock sincronizado');
+        renderStock();
+      } catch (error) {
+        document.getElementById('cards').innerHTML = `<div class="card" style="color:var(--red)">${error.message}</div>`;
+      }
     }
 
     function esc(v = '') { return String(v).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])); }
@@ -296,43 +286,188 @@
     function renderStock() {
       const root = document.getElementById('cards');
       if (!cars.length) { root.innerHTML = '<div class="card">No hay vehículos.</div>'; return; }
-      root.innerHTML = cars.map((c, i) => `
-        <section class="card" data-i="${i}">
-          <div class="cardhead"><strong>${esc(c.brand)} ${esc(c.model)}</strong><button class="btn danger del" data-i="${i}">Eliminar</button></div>
+      
+      root.innerHTML = cars.map((c, i) => {
+        const imageUrl = c.image || (c.images && c.images[0] ? c.images[0].url : '');
+        
+        return `
+        <section class="card" data-i="${i}" style="${c._isDirty ? 'border: 2px solid var(--red);' : ''}">
+          <div class="cardhead">
+            <strong>${esc(c.brand)} ${esc(c.model)} ${c._isNew ? '(Sin guardar)' : ''}</strong>
+            <button class="btn danger del" data-i="${i}">Eliminar</button>
+          </div>
           <div class="grid">
-            <label>Marca<input data-k="brand" value="${esc(c.brand)}"></label><label>Modelo<input data-k="model" value="${esc(c.model)}"></label>
-            <label>Año<input data-k="year" type="number" value="${c.year || ''}"></label><label>Precio CLP<input data-k="price" type="number" value="${c.price || ''}"></label>
-            <label class="full">URL Foto<input data-k="image" value="${esc(c.image)}"></label>
+            <label>Marca<input data-k="brand" value="${esc(c.brand)}"></label>
+            <label>Modelo<input data-k="model" value="${esc(c.model)}"></label>
+            <label>Año<input data-k="year" type="number" value="${c.year || ''}"></label>
+            <label>Precio CLP<input data-k="price" type="number" value="${c.price || ''}"></label>
+            <label>Kilometraje<input data-k="km" type="number" value="${c.km || ''}"></label>
+            <label>Transmisión
+              <select data-k="transmission">
+                <option ${c.transmission === 'Automática' ? 'selected' : ''}>Automática</option>
+                <option ${c.transmission === 'Manual' ? 'selected' : ''}>Manual</option>
+              </select>
+            </label>
+            <label>Combustible
+              <select data-k="fuel">
+                <option ${c.fuel === 'Bencina' ? 'selected' : ''}>Bencina</option>
+                <option ${c.fuel === 'Diésel' ? 'selected' : ''}>Diésel</option>
+                <option ${c.fuel === 'Híbrido' ? 'selected' : ''}>Híbrido</option>
+                <option ${c.fuel === 'Eléctrico' ? 'selected' : ''}>Eléctrico</option>
+              </select>
+            </label>
+            <label>Estado
+              <select data-k="status">
+                <option ${c.status === 'Disponible' ? 'selected' : ''}>Disponible</option>
+                <option ${c.status === 'Reservado' ? 'selected' : ''}>Reservado</option>
+                <option ${c.status === 'Vendido' ? 'selected' : ''}>Vendido</option>
+              </select>
+            </label>
+            <label class="full">URL Foto<input data-k="image" value="${esc(imageUrl)}"></label>
+            <label class="full">Descripción<textarea data-k="description" rows="3">${esc(c.description)}</textarea></label>
           </div>
         </section>
-      `).join('');
+      `}).join('');
       bindStock();
     }
 
     function bindStock() {
       document.querySelectorAll('[data-k]').forEach(el => el.addEventListener('input', e => {
-        const i = +e.target.closest('.card').dataset.i, k = e.target.dataset.k;
+        const card = e.target.closest('.card');
+        const i = +card.dataset.i;
+        const k = e.target.dataset.k;
+        
         cars[i][k] = ['year', 'price', 'km'].includes(k) ? Number(e.target.value) : e.target.value;
-        dirty = true; status('Cambios sin guardar');
+        cars[i]._isDirty = true;
+        dirty = true; 
+        
+        status('¡Cambios sin guardar!');
+        card.style.border = '2px solid var(--red)';
       }));
-      document.querySelectorAll('.del').forEach(b => b.onclick = () => {
-        if (confirm('¿Eliminar?')) { cars.splice(+b.dataset.i, 1); dirty = true; renderStock(); status('Cambios sin guardar'); }
+      
+      document.querySelectorAll('.del').forEach(b => b.onclick = async () => {
+        if (!confirm('¿Eliminar definitivamente este vehículo de la base de datos?')) return;
+        
+        const i = +b.dataset.i;
+        const car = cars[i];
+        
+
+        if (car._isNew) {
+          cars.splice(i, 1);
+          renderStock();
+          return;
+        }
+
+        try {
+          b.textContent = 'Eliminando...';
+          b.disabled = true;
+          
+          const res = await fetch(`${VEHICLES_API_URL}/${car.id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+          });
+          
+          if (res.status === 401) return logout();
+          if (!res.ok) throw new Error('Error al eliminar');
+          
+          cars.splice(i, 1);
+          renderStock();
+          status('Vehículo eliminado de la BD');
+        } catch (err) {
+          alert(err.message);
+          b.textContent = 'Eliminar';
+          b.disabled = false;
+        }
       });
     }
 
     function status(t) { document.getElementById('status').textContent = t; }
 
-    document.getElementById('addBtn').onclick = () => { cars.unshift({ id: Date.now(), brand: 'Marca', model: 'Modelo', year: 2024, price: 0, image: '' }); dirty = true; renderStock(); status('Falta guardar'); };
-    document.getElementById('saveBtn').onclick = () => { localStorage.setItem(KEY, JSON.stringify(cars)); dirty = false; status('✓ Guardado.'); };
-    document.getElementById('resetBtn').onclick = () => { if(confirm('¿Restaurar?')){ cars = DEFAULT.map(x=>({...x})); localStorage.setItem(KEY, JSON.stringify(cars)); dirty=false; renderStock(); status('Restaurado'); }};
+    document.getElementById('addBtn').onclick = () => { 
+      cars.unshift({ 
+        id: 'temp-' + Date.now(), 
+        brand: 'Marca', model: 'Modelo', year: new Date().getFullYear(), 
+        price: 0, km: 0, transmission: 'Automática', fuel: 'Bencina', 
+        status: 'Disponible', image: '', description: '',
+        _isNew: true, _isDirty: true
+      }); 
+      dirty = true; 
+      renderStock(); 
+      status('Vehículo nuevo (Falta guardar)'); 
+      window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    };
+
+document.getElementById('saveBtn').onclick = async () => { 
+      const carsToSave = cars.filter(c => c._isDirty);
+      
+      if (carsToSave.length === 0) {
+        status('No hay cambios pendientes');
+        return;
+      }
+
+      const btn = document.getElementById('saveBtn');
+      btn.textContent = 'Guardando en BD...';
+      btn.disabled = true;
+
+      try {
+        for (let car of carsToSave) {
+          const isNew = car._isNew;
+
+          // 1. Armamos un payload estrictamente limpio, ignorando la "basura" de la BD
+          const payload = {
+            brand: car.brand,
+            model: car.model,
+            year: Number(car.year),
+            price: Number(car.price),
+            km: Number(car.km),
+            transmission: car.transmission,
+            fuel: car.fuel,
+            status: car.status,
+            description: car.description || ''
+          };
+
+          // 2. Extraemos solo la URL de la imagen como un arreglo de strings
+          if (car.image) {
+            payload.images = [car.image]; // Si el admin escribió una url nueva
+          } else if (car.images && car.images.length > 0) {
+            payload.images = [car.images[0].url]; // Si venía de la BD sin tocarse
+          }
+          
+          const url = isNew ? VEHICLES_API_URL : `${VEHICLES_API_URL}/${car.id}`;
+          const method = isNew ? 'POST' : 'PATCH';
+
+          const res = await fetch(url, {
+            method: method,
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${getToken()}`
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.status === 401) { logout(); throw new Error('Sesión expirada'); }
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            const backendMsg = Array.isArray(errData.message) ? errData.message.join(', ') : (errData.message || res.statusText);
+            throw new Error(`Rechazado: ${backendMsg}`);
+          }
+        }
+
+        await loadStock(); 
+        status('✓ Stock actualizado correctamente');
+      } catch (err) {
+        alert(err.message);
+        status('Error al guardar ❌');
+      } finally {
+        btn.textContent = 'Guardar cambios del stock';
+        btn.disabled = false;
+      }
+    };
 
     window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
     
     // Iniciar
-    document.addEventListener('DOMContentLoaded', () => {
-      checkAuth();
-      renderStock();
-    });
+    document.addEventListener('DOMContentLoaded', checkAuth);
   </script>
 </body>
 </html>
