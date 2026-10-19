@@ -21,7 +21,7 @@ body{
 }
 img{max-width:100%;display:block}
 a{text-decoration:none;color:inherit}
-button,input,select,textarea{font:inherit}
+button,input,select,textarea{font:inherit;resize:none}
 .container{width:min(1160px,calc(100% - 40px));margin:0 auto}
 
 .site-header{

@@ -118,7 +118,7 @@
           <h2>¿Tienes un vehículo para vender?</h2>
           <p>Envíanos marca, modelo, año, kilometraje y algunas fotos. Te contactaremos para conversar.</p>
         </div>
-        <a class="btn btn-white" href="https://wa.me/56900000000?text=Hola%20Automotora%20One,%20quiero%20vender%20mi%20auto." target="_blank" rel="noopener">Hablar por WhatsApp</a>
+        <a class="btn btn-white" href="https://wa.me/56944693976?text=Hola%20Automotora%20One,%20quiero%20vender%20mi%20auto." target="_blank" rel="noopener">Hablar por WhatsApp</a>
       </div>
     </section>
 
@@ -129,44 +129,42 @@
           <h2>Conversemos</h2>
           <p>Estamos en Temuco. Escríbenos y te ayudamos a encontrar o vender tu próximo vehículo.</p>
 
-          <div class="contact-list">
-            <a href="https://wa.me/56900000000" target="_blank" rel="noopener">
+          <div class="contact-list" style="text-align: right;">
+            <a>
               <strong>WhatsApp</strong>
-              <span>+56 9 0000 0000</span>
+              <span>+56 9 4469 3976</span>
             </a>
-            <a href="mailto:contacto@automotoraone.cl">
+            <a href="mailto:ventas@automotoraone.cl">
               <strong>Email</strong>
-              <span>contacto@automotoraone.cl</span>
+              <span>ventas@automotoraone.cl</span>
             </a>
             <div>
               <strong>Ubicación</strong>
-              <span>Temuco, Región de La Araucanía</span>
+              <span>Claro Solar 333<br>Temuco, Región de La Araucanía</span>
             </div>
           </div>
         </div>
 
-        <form class="contact-form" id="contactForm">
-          <label>
-            Nombre
-            <input required type="text" name="name" placeholder="Tu nombre" />
+        <form id="contactForm" class="contact-form">
+          <h3>Envíanos un correo</h3>
+          
+          <label>Nombre y Apellido
+            <input type="text" id="contactName" placeholder="Escribe tu nombre y apellido..." required>
           </label>
-          <label>
-            Teléfono
-            <input required type="tel" name="phone" placeholder="+56 9..." />
+          
+          <label>Correo Electrónico
+            <input type="email" id="contactEmail" placeholder="Escribe tu dirección de correo..." required>
           </label>
-          <label>
-            ¿Qué necesitas?
-            <select name="interest">
-              <option>Quiero comprar un vehículo</option>
-              <option>Quiero vender mi vehículo</option>
-              <option>Quiero hacer una consulta</option>
-            </select>
+
+          <label>Asunto
+            <input type="text" id="contactSubject" placeholder="Asunto del correo..." required>
           </label>
-          <label>
-            Mensaje
-            <textarea name="message" rows="5" placeholder="Cuéntanos qué estás buscando"></textarea>
+          
+          <label class="full">Mensaje
+            <textarea id="contactMessage" rows="5" placeholder="Escribe tu mensaje aquí..." required></textarea>
           </label>
-          <button class="btn btn-primary" type="submit">Enviar por WhatsApp</button>
+          
+          <button type="submit" class="btn btn-primary">Enviar por Correo</button>
         </form>
       </div>
     </section>

@@ -1,6 +1,6 @@
 const API_URL = 'https://automotora-one-backend.onrender.com/vehicles'; 
 let vehicles = [];
-const WHATSAPP_NUMBER = "56900000000";
+const WHATSAPP_NUMBER = "56944693976";
 
 const vehicleGrid = document.getElementById("vehicleGrid");
 const searchInput = document.getElementById("searchInput");
@@ -192,16 +192,21 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
 menuBtn.addEventListener("click",()=>navMenu.classList.toggle("open"));
 navMenu.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>navMenu.classList.remove("open")));
 
-document.getElementById("contactForm").addEventListener("submit",e=>{
+document.getElementById('contactForm').addEventListener('submit', (e) => {
   e.preventDefault();
-  const data=new FormData(e.currentTarget);
-  const message = `Hola Automotora One.
-Nombre: ${data.get("name")}
-Teléfono: ${data.get("phone")}
-Motivo: ${data.get("interest")}
-Mensaje: ${data.get("message") || "-"}`;
 
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,"_blank");
+  const name = document.getElementById('contactName').value;
+  const userEmail = document.getElementById('contactEmail').value;
+  const subject = document.getElementById('contactSubject').value;
+  const message = document.getElementById('contactMessage').value;
+
+  const targetEmail = 'ventas@automotoraone.cl'; 
+
+  const bodyText = `Nombre: ${name}\nCorreo de contacto: ${userEmail}\n\nMensaje:\n${message}`;
+
+  const mailtoLink = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+
+  window.location.href = mailtoLink;
 });
 
 document.addEventListener('DOMContentLoaded', loadCatalog);
