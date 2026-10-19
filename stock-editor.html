@@ -289,6 +289,7 @@
       
       root.innerHTML = cars.map((c, i) => {
         const imageUrl = c.image || (c.images && c.images[0] ? c.images[0].url : '');
+        const imagesCount = c.images ? c.images.length : (c.image ? 1 : 0);
         
         return `
         <section class="card" data-i="${i}" style="${c._isDirty ? 'border: 2px solid var(--red);' : ''}">
@@ -323,7 +324,10 @@
                 <option ${c.status === 'Vendido' ? 'selected' : ''}>Vendido</option>
               </select>
             </label>
-            <label class="full">URL Foto<input data-k="image" value="${esc(imageUrl)}"></label>
+            <label class="full">
+              Subir Imágenes ${imagesCount > 0 ? `(Tiene ${imagesCount} fotos)` : ''}
+              <input type="file" multiple accept="image/*" class="file-input">
+            </label>
             <label class="full">Descripción<textarea data-k="description" rows="3">${esc(c.description)}</textarea></label>
           </div>
         </section>
@@ -332,53 +336,56 @@
     }
 
     function bindStock() {
+      // Inputs de texto
       document.querySelectorAll('[data-k]').forEach(el => el.addEventListener('input', e => {
         const card = e.target.closest('.card');
         const i = +card.dataset.i;
         const k = e.target.dataset.k;
         
         cars[i][k] = ['year', 'price', 'km'].includes(k) ? Number(e.target.value) : e.target.value;
-        cars[i]._isDirty = true;
-        dirty = true; 
+        marcarSucio(card, i);
+      }));
+
+      // Input de archivos (Imágenes)
+      document.querySelectorAll('.file-input').forEach(el => el.addEventListener('change', e => {
+        const card = e.target.closest('.card');
+        const i = +card.dataset.i;
         
-        status('¡Cambios sin guardar!');
-        card.style.border = '2px solid var(--red)';
+        cars[i]._files = Array.from(e.target.files);
+        marcarSucio(card, i);
       }));
       
       document.querySelectorAll('.del').forEach(b => b.onclick = async () => {
         if (!confirm('¿Eliminar definitivamente este vehículo de la base de datos?')) return;
-        
         const i = +b.dataset.i;
         const car = cars[i];
-        
-
-        if (car._isNew) {
-          cars.splice(i, 1);
-          renderStock();
-          return;
-        }
+        if (car._isNew) { cars.splice(i, 1); renderStock(); return; }
 
         try {
-          b.textContent = 'Eliminando...';
+          b.textContent = '...';
           b.disabled = true;
-          
           const res = await fetch(`${VEHICLES_API_URL}/${car.id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${getToken()}` }
           });
-          
           if (res.status === 401) return logout();
           if (!res.ok) throw new Error('Error al eliminar');
-          
           cars.splice(i, 1);
           renderStock();
-          status('Vehículo eliminado de la BD');
+          status('Vehículo eliminado');
         } catch (err) {
           alert(err.message);
           b.textContent = 'Eliminar';
           b.disabled = false;
         }
       });
+    }
+
+    function marcarSucio(card, i) {
+      cars[i]._isDirty = true;
+      dirty = true; 
+      status('Cambios sin guardar ⚠️');
+      card.style.border = '2px solid var(--red)';
     }
 
     function status(t) { document.getElementById('status').textContent = t; }
@@ -397,72 +404,76 @@
       window.scrollTo({ top: 0, behavior: 'smooth' }); 
     };
 
-document.getElementById('saveBtn').onclick = async () => { 
-      const carsToSave = cars.filter(c => c._isDirty);
-      
-      if (carsToSave.length === 0) {
-        status('No hay cambios pendientes');
-        return;
-      }
-
-      const btn = document.getElementById('saveBtn');
-      btn.textContent = 'Guardando en BD...';
-      btn.disabled = true;
-
-      try {
-        for (let car of carsToSave) {
-          const isNew = car._isNew;
-
-          // 1. Armamos un payload estrictamente limpio, ignorando la "basura" de la BD
-          const payload = {
-            brand: car.brand,
-            model: car.model,
-            year: Number(car.year),
-            price: Number(car.price),
-            km: Number(car.km),
-            transmission: car.transmission,
-            fuel: car.fuel,
-            status: car.status,
-            description: car.description || ''
-          };
-
-          // 2. Extraemos solo la URL de la imagen como un arreglo de strings
-          if (car.image) {
-            payload.images = [car.image]; // Si el admin escribió una url nueva
-          } else if (car.images && car.images.length > 0) {
-            payload.images = [car.images[0].url]; // Si venía de la BD sin tocarse
-          }
-          
-          const url = isNew ? VEHICLES_API_URL : `${VEHICLES_API_URL}/${car.id}`;
-          const method = isNew ? 'POST' : 'PATCH';
-
-          const res = await fetch(url, {
-            method: method,
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${getToken()}`
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (res.status === 401) { logout(); throw new Error('Sesión expirada'); }
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            const backendMsg = Array.isArray(errData.message) ? errData.message.join(', ') : (errData.message || res.statusText);
-            throw new Error(`Rechazado: ${backendMsg}`);
-          }
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+      saveBtn.onclick = async () => { 
+        const carsToSave = cars.filter(c => c._isDirty);
+        
+        if (carsToSave.length === 0) {
+          status('No hay cambios pendientes');
+          return;
         }
 
-        await loadStock(); 
-        status('✓ Stock actualizado correctamente');
-      } catch (err) {
-        alert(err.message);
-        status('Error al guardar ❌');
-      } finally {
-        btn.textContent = 'Guardar cambios del stock';
-        btn.disabled = false;
-      }
-    };
+        saveBtn.textContent = 'Guardando datos y subiendo fotos...';
+        saveBtn.disabled = true;
+
+        try {
+          for (let car of carsToSave) {
+            const isNew = car._isNew;
+            
+            const payload = {
+              brand: car.brand, model: car.model, year: Number(car.year),
+              price: Number(car.price), km: Number(car.km), transmission: car.transmission,
+              fuel: car.fuel, status: car.status, description: car.description || ''
+            };
+
+            const dataUrl = isNew ? VEHICLES_API_URL : `${VEHICLES_API_URL}/${car.id}`;
+            const dataMethod = isNew ? 'POST' : 'PATCH';
+
+            const dataRes = await fetch(dataUrl, {
+              method: dataMethod,
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getToken()}`
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (dataRes.status === 401) { logout(); throw new Error('Sesión expirada'); }
+            if (!dataRes.ok) throw new Error(`Error guardando datos de ${car.brand}`);
+            
+            const savedCar = await dataRes.json();
+            const realCarId = savedCar.id;
+
+            if (car._files && car._files.length > 0) {
+              status(`Subiendo ${car._files.length} fotos para ${car.brand}...`);
+              
+              for (const file of car._files) {
+                const formData = new FormData();
+                formData.append('file', file); 
+
+                const imgRes = await fetch(`${VEHICLES_API_URL}/${realCarId}/image`, {
+                  method: 'POST',
+                  headers: { 'Authorization': `Bearer ${getToken()}` },
+                  body: formData
+                });
+
+                if (!imgRes.ok) console.error(`Falló la subida de una imagen para el auto ${realCarId}`);
+              }
+            }
+          }
+
+          await loadStock(); 
+          status('✓ Stock actualizado correctamente (con fotos)');
+        } catch (err) {
+          alert(err.message);
+          status('Error al guardar');
+        } finally {
+          saveBtn.textContent = 'Guardar cambios del stock';
+          saveBtn.disabled = false;
+        }
+      };
+    }
 
     window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
     
