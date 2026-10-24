@@ -1,17 +1,204 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>En Mantenimiento | Automotora One</title>
-  <style>
-    body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: sans-serif; background: #f9f9f9; color: #333; text-align: center; padding: 20px; }
-    h1 { color: #d32f2f; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Automotora One Temuco - autos seleccionados, atención personalizada y compra/venta de vehículos." />
+  <title>Automotora One | Temuco</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="logo-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div>
-    <h1>🛠️ Sitio en Mantenimiento</h1>
-    <p>Estamos realizando actualizaciones en nuestro catálogo. Volveremos en unos minutos.</p>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#inicio" aria-label="Automotora One">
+        <img class="brand-logo" src="logo-full.png" alt="Automotora One" />
+      </a>
+
+      <button class="menu-btn" id="menuBtn" aria-label="Abrir menú">☰</button>
+
+      <nav id="navMenu">
+        <a href="#inicio">Inicio</a>
+        <a href="#catalogo">Vehículos</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#contacto">Contacto</a>
+      </nav>
+
+      <a class="btn btn-small btn-primary desktop-cta" href="#catalogo">Ver vehículos</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="inicio">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <span class="eyebrow">AUTOMOTORA EN TEMUCO</span>
+          <h1>Tu auto.<br><span>Nuestra prioridad.</span></h1>
+          <p>Compra, venta y consignación de vehículos seleccionados en Temuco, con atención personalizada durante todo el proceso.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#catalogo">Explorar vehículos</a>
+            <a class="btn btn-secondary" href="#contacto">Quiero vender mi auto</a>
+          </div>
+          <div class="hero-stats">
+            <div><strong>Compra y venta</strong><span>Vehículos seleccionados</span></div>
+            <div><strong>Consignaciones</strong><span>Gestionamos la venta de tu auto</span></div>
+            <div><strong>Temuco</strong><span>Atención personalizada</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="catalog-section" id="catalogo">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">CATÁLOGO</span>
+            <h2>Vehículos disponibles</h2>
+          </div>
+          <p>Encuentra el auto que se ajuste a lo que buscas.</p>
+        </div>
+
+        <div class="filters">
+          <input id="searchInput" type="search" placeholder="Buscar marca o modelo..." />
+          <select id="brandFilter">
+            <option value="">Todas las marcas</option>
+          </select>
+          <select id="yearFilter">
+            <option value="">Todos los años</option>
+          </select>
+          <select id="sortFilter">
+            <option value="newest">Más nuevos</option>
+            <option value="price-asc">Menor precio</option>
+            <option value="price-desc">Mayor precio</option>
+            <option value="km-asc">Menor kilometraje</option>
+          </select>
+        </div>
+
+        <div class="vehicle-grid" id="vehicleGrid"></div>
+      </div>
+    </section>
+
+    <section class="why-section" id="nosotros">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">AUTOMOTORA ONE</span>
+            <h2>Comprar un auto puede ser más simple</h2>
+          </div>
+        </div>
+
+        <div class="benefit-grid">
+          <article class="benefit-card">
+            <span>01</span>
+            <h3>Vehículos seleccionados</h3>
+            <p>Publicaciones claras, información relevante y autos elegidos con criterio.</p>
+          </article>
+          <article class="benefit-card">
+            <span>02</span>
+            <h3>Atención personalizada</h3>
+            <p>Te acompañamos antes, durante y después de encontrar el vehículo que buscas.</p>
+          </article>
+          <article class="benefit-card">
+            <span>03</span>
+            <h3>Compra y venta</h3>
+            <p>¿Quieres vender tu vehículo? Cuéntanos los datos y conversemos.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="sell-section">
+      <div class="container sell-card">
+        <div>
+          <span class="eyebrow light">VENDE TU AUTO</span>
+          <h2>¿Tienes un vehículo para vender?</h2>
+          <p>Envíanos marca, modelo, año, kilometraje y algunas fotos. Te contactaremos para conversar.</p>
+        </div>
+        <a class="btn btn-white" href="https://wa.me/56944693976?text=Hola%20Automotora%20One,%20quiero%20vender%20mi%20auto." target="_blank" rel="noopener">Hablar por WhatsApp</a>
+      </div>
+    </section>
+
+    <section class="contact-section" id="contacto">
+      <div class="container contact-grid">
+        <div>
+          <span class="eyebrow">CONTACTO</span>
+          <h2>Conversemos</h2>
+          <p>Estamos en Temuco. Escríbenos y te ayudamos a encontrar o vender tu próximo vehículo.</p>
+
+          <div class="contact-list" style="text-align: right;">
+            <a>
+              <strong>WhatsApp</strong>
+              <span>+56 9 4469 3976</span>
+            </a>
+            <a href="mailto:ventas@automotoraone.cl">
+              <strong>Email</strong>
+              <span>ventas@automotoraone.cl</span>
+            </a>
+            <div>
+              <strong>Ubicación</strong>
+              <span>Claro Solar 333<br>Temuco, Región de La Araucanía</span>
+            </div>
+          </div>
+        </div>
+
+        <form id="contactForm" class="contact-form">
+          <h3>Envíanos un correo</h3>
+          
+          <label>Nombre y Apellido
+            <input type="text" id="contactName" placeholder="Escribe tu nombre y apellido..." required>
+          </label>
+          
+          <label>Correo Electrónico
+            <input type="email" id="contactEmail" placeholder="Escribe tu dirección de correo..." required>
+          </label>
+
+          <label>Asunto
+            <input type="text" id="contactSubject" placeholder="Asunto del correo..." required>
+          </label>
+          
+          <label class="full">Mensaje
+            <textarea id="contactMessage" rows="5" placeholder="Escribe tu mensaje aquí..." required></textarea>
+          </label>
+          
+          <button type="submit" class="btn btn-primary">Enviar por Correo</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div class="brand footer-brand">
+        <img class="footer-logo" src="logo-full.png" alt="Automotora One" />
+      </div>
+      <p>Tu automotora de confianza en Temuco.</p>
+      <small>© 2026 Automotora One. Todos los derechos reservados.</small>
+    </div>
+  </footer>
+
+  <div class="modal" id="vehicleModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card">
+      <button class="modal-close" data-close-modal aria-label="Cerrar">×</button>
+      <img id="modalImage" src="" alt="" />
+      <div class="modal-content">
+        <div class="vehicle-topline">
+          <span id="modalYear"></span>
+          <span id="modalStatus" class="status-badge"></span>
+        </div>
+        <h3 id="modalTitle"></h3>
+        <p class="vehicle-price" id="modalPrice"></p>
+        <div class="modal-specs" id="modalSpecs"></div>
+        <p id="modalDescription"></p>
+        <a id="modalWhatsapp" class="btn btn-primary" target="_blank" rel="noopener">Consultar por WhatsApp</a>
+      </div>
+    </div>
   </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
