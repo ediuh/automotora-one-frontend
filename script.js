@@ -68,7 +68,7 @@ function getFilteredVehicles(){
     case "price-asc": list.sort((a,b)=>a.price-b.price); break;
     case "price-desc": list.sort((a,b)=>b.price-a.price); break;
     case "km-asc": list.sort((a,b)=>a.km-b.km); break;
-    default: list.sort((a,b)=>b.year-a.year);
+    default: list.sort((a,b)=>(a.brand || '').localeCompare(b.brand || ''));
   }
   return list;
 }
