@@ -192,7 +192,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
 menuBtn.addEventListener("click",()=>navMenu.classList.toggle("open"));
 navMenu.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>navMenu.classList.remove("open")));
 
-document.getElementById('contactForm').addEventListener('submit', (e) => {
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const name = document.getElementById('contactName').value;
@@ -200,13 +200,39 @@ document.getElementById('contactForm').addEventListener('submit', (e) => {
   const subject = document.getElementById('contactSubject').value;
   const message = document.getElementById('contactMessage').value;
 
-  const targetEmail = 'ventas@automotoraone.cl'; 
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
 
-  const bodyText = `Nombre: ${name}\nCorreo de contacto: ${userEmail}\n\nMensaje:\n${message}`;
+  submitBtn.textContent = 'Enviando ticket...';
+  submitBtn.disabled = true;
 
-  const mailtoLink = `mailto:${targetEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+  try {
+    const BACKEND_TICKETS_URL = API_URL.replace('/vehicles', '/tickets');
 
-  window.location.href = mailtoLink;
+    const response = await fetch(BACKEND_TICKETS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        email: userEmail,
+        subject,
+        message
+      })
+    });
+
+    if (!response.ok) throw new Error('Error al enviar el ticket');
+
+    alert('¡Ticket enviado con éxito! Te contactaremos pronto.');
+    e.target.reset();
+  } catch (error) {
+    console.error('Error enviando ticket:', error);
+    alert('Hubo un problema al enviar el mensaje. Intenta nuevamente más tarde.');
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+  }
 });
 
 document.addEventListener('DOMContentLoaded', loadCatalog);
